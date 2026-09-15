@@ -44,3 +44,11 @@ uint16_t adc_read(uint8_t chan){
 	return result;
 	
 }
+
+uint16_t adc_convert_mv(uint16_t value){
+	uint32_t voltage_mv;
+	voltage_mv = (uint32_t)value * 5000UL;
+	voltage_mv = voltage_mv / 1023UL;
+	
+	return(uint16_t)voltage_mv;
+}

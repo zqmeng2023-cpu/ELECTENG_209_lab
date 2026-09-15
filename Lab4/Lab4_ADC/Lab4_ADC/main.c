@@ -5,9 +5,16 @@
  * Author : zmen433
  */ 
 
-#include <avr/io.h>
 #include "common.h"
+
+#include <avr/io.h>
+#include <util/delay.h>
+
 #include "adc.h"
+
+volatile uint16_t adc_raw;
+volatile uint16_t adc_mv;
+
 
 int main(void)
 {
@@ -16,6 +23,11 @@ int main(void)
 	
     while (1) 
     {
+		adc_raw = adc_read(2);
+		adc_mv = adc_convert_mv(adc_raw);
+		
+		_delay_ms(1);
+		
     }
 	return 0;
 }
