@@ -22,3 +22,25 @@ void adc_init(void) {
 	
 	ADCSRB = 0x00;
 }
+
+uint16_t adc_read(uint8_t chan){
+	uint8_t low;
+	uint8_t high;
+	uint16_t result;
+	
+	// Clear old channel selection bits and select the requested ADC channel
+	ADMUX = (ADMUX & 0xF0) | (chan & 0x0F);
+	
+	// Start ADC conversion
+	ADCSRA |= (1 << ADSC);
+	
+	while(ADCSRA & (1 << ADSC)){
+		
+	}
+	low = ADCL;
+	high = ADCH;
+	
+	result  = ((uint16_t)high << 8) | low;
+	return result;
+	
+}
