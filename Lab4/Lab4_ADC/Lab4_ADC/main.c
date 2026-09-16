@@ -20,7 +20,7 @@ int main(void)
 {
     /* Replace with your application code */
 	adc_init();
-	
+	usart_init(12);
     while (1) 
     {
 		adc_raw = adc_read(2);
