@@ -26,7 +26,14 @@ int main(void)
 		adc_raw = adc_read(2);
 		adc_mv = adc_convert_mv(adc_raw);
 		
-		_delay_ms(1);
+		// Convert number to ASCII and transmit
+		usart_transmit_uint16(adc_mv);
+		
+		// Send unit
+		usart_transmit_string("mV\r\n");
+		
+		// Slow down output so it is easier to read
+		_delay_ms(100);
 		
     }
 	return 0;
