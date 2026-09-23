@@ -11,6 +11,17 @@
 #include <avr/interrupt.h>
 #include <stdint.h>
 
+ISR (TIMER0_COMPA_vect){
+	static uint8_t counter = 0;
+	counter++;
+	
+	if(counter >= 10){
+		counter = 0;
+		led_toggle();
+	}
+	
+}
+
 void timer0_init(){
 	TCCR0A = (1 << WGM01); //CTC mode
 	
@@ -20,6 +31,7 @@ void timer0_init(){
 	
 	TCCR0B = (1 << CS02);
 	
+	TIMSK0 = TIMSK0 | (1 << OCIE0A);
 	
 }
 
