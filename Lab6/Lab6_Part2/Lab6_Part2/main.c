@@ -4,76 +4,52 @@
  * Created: 30/09/2026 1:18:39 pm
  * Author : zmen433
  */ 
+#define F_CPU 2000000UL
 
 #include <avr/io.h>
-#include <stdint.h>
+#include <avr/interrupt.h>
+#include <util/delay.h>
+#include "display.h"
 
-void init_display(void)
-{
-	//Ds1 -Ds4: PD4 - PD7 output
-	DDRD |= (1 << PD4)|(1 << PD5)|(1 << PD6)|(1 << PD7);
+
+volatile uint16_t counter = 0;
+
+void timer0_init(void){
+	// Timer0 CTC mode
+	TCCR0A = (1 << WGM01);
 	
-	//SH_CP, SH_DS, SH_ST: PC3-PC5 output
-	DDRC |= (1 << PC3)|(1 << PC4)|(1 << PC5);
+	// 2MHz / 256 =7812.5 Hz
+	// 10ms = 78 counts
+	OCR0A = 77;
 	
-	//disable Ds1, Ds2, Ds3
-	PORTD |= (1 << PD4);
-	PORTD |= (1 << PD5);
-	PORTD |= (1 << PD6);
+	// Enable Timer 0 compare match a interrupt
+	TIMSK0 = (1 << OCIE0A);
 	
-	//enable Ds4
-	PORTD &= ~(1 << PD7);
+	// prescaler = 256
+	TCCR0B = (1 << CS02);
 	
-	//Initially SH_CP and SH_ST = 0
-	PORTC &= ~(1 << PC3);
-	PORTC &= ~(1 << PC5);
+	
 }
 
-void send_next_character_to_display(void){
-	uint8_t data = 0x07; //number 7
+ISR(TIMER0_COMPA_vect){
+	send_next_character_to_display();
+}
+
+int main(void){
+	init_display();
+	timer0_init();
+	seperate_and_load_characters(counter, 255);
+	sei();
 	
-	// SH_CP = 0
-	PORTC &= ~(1 << PC3);
-	PORTC &= ~(1 << PC5);
-	
-	for (uint8_t i = 0; i < 8; i++)
-	{
-		//check MSB 
-		if ((data & 0x80)!=0)
-		{
-			//SH_DS = 1
-			PORTC |= (1 << PC4);
-			
-		} 
-		else
-		{
-			//SH_DS=0
-			PORTC &= ~(1 << PC4);
+	while(1){
+		_delay_ms(400);
+		counter++;
+		if(counter > 9999){
+			counter = 0;
 			
 		}
+		seperate_and_load_characters(counter, 255);
 		
-		// Toggle Sh_CP : 0 to 1 to 0
-		PORTC |= (1 << PC3);
-		PORTC &= ~(1 << PC3);
-		
-		//Move next bit to MSB
-		data = data << 1;
 	}
-	
-	//Toggle SH_ST to latch output
-	PORTC |= (1 << PC5);
-	PORTC &= ~(1 << PC5);
-	
-}
-int main(void)
-{
-    /* Replace with your application code */
-	init_display();
-	send_next_character_to_display();
-	
-    while (1) 
-    {
-    }
 	return 0;
 }
-
